@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deforestation Awareness Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Earthy Neutrals -->
+    <!-- Application Structure Plan: A tab-based, single-page dashboard design was chosen to replace the linear slide format. This structure (Hero, The Problem, The Impact, The Solution) allows users to explore information non-linearly, which is more engaging and user-centric. The hero section grabs attention with a powerful statistic. Tabs provide clear navigation, while interactive charts and cards encourage exploration, making complex data digestible and fostering a deeper understanding of the issue. -->
+    <!-- Visualization & Content Choices: 
+        - Key Facts (Report Data): Goal: Inform. Method: Grid of stat cards. Interaction: Hover effects. Justification: More visually impactful than a list.
+        - Causes (Report Data): Goal: Compare/Organize. Method: Donut Chart. Interaction: Tooltip on hover. Justification: Best for showing parts of a whole. Library: Chart.js.
+        - Impacts (Report Data): Goal: Inform. Method: Icon-based lists. Interaction: None. Justification: Improves scannability and visual appeal. Method: HTML/CSS/Unicode.
+        - Solutions (Report Data): Goal: Inspire Action. Method: Clickable cards. Interaction: Click to reveal details. Justification: Encourages user engagement and makes solutions feel tangible.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #3f3c3a;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+        .nav-btn.active {
+            background-color: #4A5C50;
+            color: #FDFBF8;
+        }
+        .nav-btn:not(.active):hover {
+            background-color: #EAE8E4;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .solution-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .solution-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#4A5C50] mb-2">Deforestation Awareness</h1>
+            <p class="text-lg text-gray-600">Protecting Our Forests, Protecting Our Future</p>
+        </header>
+
+        <main>
+            <section id="hero" class="text-center bg-white rounded-lg p-8 mb-8 shadow-md">
+                <p class="text-xl md:text-2xl font-semibold text-gray-700 mb-4">The Amazon rainforest loses an area equivalent to...</p>
+                <div class="text-5xl md:text-7xl font-bold text-[#A98C6A] animate-pulse">1 Football Field</div>
+                <p class="text-xl md:text-2xl font-semibold text-gray-700 mt-4">...every single second.</p>
+                <p class="mt-6 text-gray-600 max-w-3xl mx-auto">This dashboard provides an interactive overview of deforestation, a critical issue affecting our planet's health, biodiversity, and climate. Explore the sections below to understand its causes, impacts, and the solutions we can implement together.</p>
+            </section>
+
+            <div class="sticky top-0 z-10 bg-[#FDFBF8] py-4 mb-8">
+                <nav id="navigation" class="flex justify-center items-center bg-white rounded-full p-2 shadow-md max-w-md mx-auto">
+                    <button data-target="problem" class="nav-btn active flex-1 text-center py-2 px-4 rounded-full font-semibold">The Problem</button>
+                    <button data-target="impact" class="nav-btn flex-1 text-center py-2 px-4 rounded-full font-semibold">The Impact</button>
+                    <button data-target="solution" class="nav-btn flex-1 text-center py-2 px-4 rounded-full font-semibold">The Solution</button>
+                </nav>
+            </div>
+
+            <div id="content">
+                <section id="problem" class="content-section active">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#4A5C50] mb-2">What is Deforestation?</h2>
+                        <p class="max-w-3xl mx-auto text-gray-600">This section breaks down the core issue. Deforestation is the permanent removal of trees and forested land, primarily for agriculture, urban development, or industrial use. Below, you can explore the primary drivers of this phenomenon and see key global statistics that highlight the scale of the problem.</p>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-2xl font-semibold text-center mb-4 text-[#A98C6A]">Primary Causes</h3>
+                            <div class="chart-container">
+                                <canvas id="causesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                             <h3 class="text-2xl font-semibold text-center mb-4 text-[#A98C6A]">Global Facts & Data</h3>
+                            <div id="factsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="impact" class="content-section">
+                     <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#4A5C50] mb-2">The Ripple Effect</h2>
+                        <p class="max-w-3xl mx-auto text-gray-600">The loss of forests has far-reaching consequences that extend beyond the cleared land. This section explores the profound environmental, social, and economic impacts. From accelerating climate change to displacing communities, the effects are interconnected and severe.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-2xl font-semibold text-center mb-4 text-[#A98C6A]">Environmental Impact</h3>
+                            <ul id="environmentalImpacts" class="space-y-3"></ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-2xl font-semibold text-center mb-4 text-[#A98C6A]">Social & Economic Impact</h3>
+                            <ul id="socialImpacts" class="space-y-3"></ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="solution" class="content-section">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#4A5C50] mb-2">Pathways to a Greener Future</h2>
+                        <p class="max-w-3xl mx-auto text-gray-600">While the problem is vast, it is not insurmountable. There are effective solutions and awareness strategies that can reverse the trend of deforestation. This section highlights key actions we can take, from large-scale reforestation efforts to individual lifestyle changes. Click on the cards to learn more.</p>
+                    </div>
+                    <div id="solutionsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 border-t pt-6">
+            <h3 class="text-2xl font-bold text-[#4A5C50] mb-4">Let's Remember...</h3>
+            <div id="slogans" class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 text-gray-600 font-semibold">
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const appData = {
+                facts: [
+                    { label: 'Forest Lost Annually', value: '10M', unit: 'hectares' },
+                    { label: 'CO₂ Absorption by Forests', value: '2.6B', unit: 'tonnes/year' },
+                    { label: 'Terrestrial Species in Forests', value: '80%', unit: '' },
+                    { label: 'People Depending on Forests', value: '1.6B', unit: '' },
+                    { label: 'Deforestation from Agriculture', value: '90%', unit: '' },
+                    { label: 'Greenhouse Gas Emissions', value: '12%', unit: 'from deforestation' }
+                ],
+                causes: {
+                    labels: ['Agricultural Expansion', 'Logging', 'Infrastructure', 'Mining', 'Forest Fires'],
+                    data: [90, 5, 2, 2, 1] 
+                },
+                impacts: {
+                    environmental: [
+                        { icon: '🌍', text: 'Climate change from CO₂ release' },
+                        { icon: '🦋', text: 'Loss of biodiversity' },
+                        { icon: '⛰️', text: 'Soil erosion and degradation' },
+                        { icon: '💧', text: 'Disruption of water cycles' },
+                        { icon: '🌡️', text: 'Increased local temperatures' }
+                    ],
+                    social: [
+                        { icon: '🛖', text: 'Displacement of indigenous communities' },
+                        { icon: '💼', text: 'Loss of livelihoods and resources' },
+                        { icon: '🏛️', text: 'Destruction of cultural heritage' },
+                        { icon: '📉', text: 'Long-term economic & environmental loss' }
+                    ]
+                },
+                solutions: [
+                    { title: 'Afforestation & Reforestation', description: 'Actively planting trees to create new forests and restore old ones.' },
+                    { title: 'Sustainable Forestry', description: 'Managing forests to meet current needs without compromising future generations.' },
+                    { title: 'Stronger Laws', description: 'Enforcing policies that protect forests and punish illegal logging.' },
+                    { title: 'Eco-Friendly Lifestyle', description: 'Making conscious choices to reduce consumption and environmental footprint.' },
+                    { title: 'Support Sustainable Products', description: 'Choosing products certified by organizations like the Forest Stewardship Council (FSC).' },
+                    { title: 'Educational Campaigns', description: 'Raising public awareness about the importance of forests and the threats they face.' },
+                ],
+                slogans: [
+                    "Forests are the lungs of the Earth",
+                    "No Trees, No Life",
+                    "Plant a Tree, Plant a Hope"
+                ]
+            };
+
+            const navigation = document.getElementById('navigation');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navigation.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const targetId = e.target.dataset.target;
+
+                    navigation.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        }
+                    });
+                }
+            });
+            
+            function populateFacts() {
+                const grid = document.getElementById('factsGrid');
+                grid.innerHTML = '';
+                appData.facts.forEach(fact => {
+                    const factCard = document.createElement('div');
+                    factCard.className = 'bg-[#FDFBF8] p-4 rounded-lg';
+                    factCard.innerHTML = `
+                        <p class="text-3xl font-bold text-[#4A5C50]">${fact.value}</p>
+                        <p class="text-sm text-gray-600">${fact.unit}</p>
+                        <p class="mt-1 font-semibold text-gray-700">${fact.label}</p>
+                    `;
+                    grid.appendChild(factCard);
+                });
+            }
+
+            function populateImpacts() {
+                const envList = document.getElementById('environmentalImpacts');
+                const socList = document.getElementById('socialImpacts');
+                envList.innerHTML = '';
+                socList.innerHTML = '';
+
+                appData.impacts.environmental.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start p-3 bg-[#FDFBF8] rounded-lg';
+                    li.innerHTML = `<span class="text-2xl mr-4">${item.icon}</span><span class="text-gray-700">${item.text}</span>`;
+                    envList.appendChild(li);
+                });
+
+                appData.impacts.social.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start p-3 bg-[#FDFBF8] rounded-lg';
+                    li.innerHTML = `<span class="text-2xl mr-4">${item.icon}</span><span class="text-gray-700">${item.text}</span>`;
+                    socList.appendChild(li);
+                });
+            }
+            
+            function populateSolutions() {
+                const grid = document.getElementById('solutionsGrid');
+                grid.innerHTML = '';
+                appData.solutions.forEach(solution => {
+                    const card = document.createElement('div');
+                    card.className = 'solution-card bg-white p-6 rounded-lg shadow-md cursor-pointer';
+                    card.innerHTML = `
+                        <h4 class="text-xl font-bold text-[#4A5C50] mb-2">${solution.title}</h4>
+                        <p class="text-gray-600">${solution.description}</p>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            function populateSlogans() {
+                const container = document.getElementById('slogans');
+                container.innerHTML = '';
+                appData.slogans.forEach((slogan, index) => {
+                    const span = document.createElement('span');
+                    span.textContent = `"${slogan}"`;
+                    container.appendChild(span);
+                    if (index < appData.slogans.length - 1) {
+                        const separator = document.createElement('span');
+                        separator.className = 'hidden sm:inline text-gray-400';
+                        separator.textContent = '•';
+                        container.appendChild(separator);
+                    }
+                });
+            }
+
+            function createCausesChart() {
+                const ctx = document.getElementById('causesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: appData.causes.labels,
+                        datasets: [{
+                            data: appData.causes.data,
+                            backgroundColor: ['#A98C6A', '#6B8A7A', '#C8B7A6', '#8D7B68', '#A47551'],
+                            borderColor: '#FDFBF8',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#3f3c3a',
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed + '%';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            populateFacts();
+            populateImpacts();
+            populateSolutions();
+            populateSlogans();
+            createCausesChart();
+        });
+    </script>
+</body>
+</html>
